@@ -16,16 +16,19 @@ window.recorder =
 			navigator.getUserMedia {audio: true}, @onSuccess, @onFail
 		$(document).on 'click', '#playback', @playback
 		$(document).on 'click', '#output', => @outputting = !@outputting
+		$(document).on 'click', '#stop', =>
+			@stream.stop() if @mediaStreamSource
 
 	output: (event) ->
 		if @outputting
 			raw = event.inputBuffer.getChannelData(0)
-			html = (point for point in raw).join(' ')
-			@$outputBox.html @$outputBox.html() + '<br />' + html
+			sum = 0
+			sum += point for point in raw
+			@$outputBox.prepend("<div class='bar' style='width: #{Math.abs(sum) * 40}px'></div>")
 
-	onSuccess: (stream) ->
-		console.log "Streaming!", stream
-		@mediaStreamSource = @context.createMediaStreamSource(stream)
+	onSuccess: (@stream) ->
+		console.log "Streaming!", @stream
+		@mediaStreamSource = @context.createMediaStreamSource(@stream)
 		@mediaStreamSource.connect(@outputNode)
 
 	onFail: (e) -> console.log "fail!", e
