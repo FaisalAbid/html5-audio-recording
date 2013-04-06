@@ -5,10 +5,11 @@ navigator.getUserMedia  = navigator.getUserMedia ||
 
 window.recorder =
 	init: ->
+		_.bindAll(@)
 		@context = new webkitAudioContext()
 		$(document).on 'click', '#start-recording', =>
-			navigator.getUserMedia {audio: true}, @onSuccess.bind(@), @onFail.bind(@)
-		$(document).on 'click', '#playback', @playback.bind(@)
+			navigator.getUserMedia {audio: true}, @onSuccess, @onFail
+		$(document).on 'click', '#playback', @playback
 
 	onSuccess: (stream) ->
 		console.log "Streaming!", stream
