@@ -19,7 +19,9 @@ client.on('open', function() {
 		if (streaming) {
 			var rawData = event.inputBuffer.getChannelData(0);
 			var intArray = floatTo16BitArray(rawData);
-			stream.write(speex.encode(intArray));
+			encodedData = speex.encode(intArray);
+			console.log(encodedData);
+			stream.write(intArray.buffer);
 		}
 	};
 
@@ -45,7 +47,7 @@ client.on('open', function() {
 	});
 });
 
-function floatTo16BitPCM(output, offset, input){
+function floatTo16BitArray(input){
 	var intArray = new Int16Array(input.length);
   for (var i = 0; i < input.length; i++){
   	if (Math.abs(input[i]) > 1) console.log(input[i]);
