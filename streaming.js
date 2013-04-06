@@ -8,16 +8,18 @@ client.on('open', function() {
 	var stream = client.createStream();
 	var context = new webkitAudioContext();
 	var outputNode = context.createJavaScriptNode(4096, 1, 1);
+	var speex = new Speex({
+	   	benchmark: false,
+	  	quality: 2,
+	  	complexity: 2,
+	  	bits_size: 15
+	});
 
 	outputNode.onaudioprocess = function(event) {
 		if (streaming) {
 			var rawData = event.inputBuffer.getChannelData(0);
-			var buffer = new ArrayBuffer(2 * rawData.length);
-			var view = new DataView(buffer);
-			floatTo16BitPCM(view, 0, rawData);
-			console.log(view);
-			window.view = view;
-			stream.write(view.buffer);
+			var intArray = floatTo16BitArray(rawData);
+			stream.write(speex.encode(intArray));
 		}
 	};
 
@@ -44,9 +46,11 @@ client.on('open', function() {
 });
 
 function floatTo16BitPCM(output, offset, input){
-  for (var i = 0; i < input.length; i++, offset+=2){
+	var intArray = new Int16Array(input.length);
+  for (var i = 0; i < input.length; i++){
   	if (Math.abs(input[i]) > 1) console.log(input[i]);
     var s = Math.max(-1, Math.min(1, input[i]));
-    output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+    intArray[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
   }
+  return intArray;
 }
